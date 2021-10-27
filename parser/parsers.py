@@ -7,10 +7,13 @@ class Parser:
     def __init__(self, reader):
         self.reader = reader
         self.size = self.reader.count_lines()
-        self.reader.open()
+        self.generator = self.reader.read()
 
     def read_line(self):
-        return self.reader.read()
+        try:
+            return next(self.generator)
+        except StopIteration:
+            return None
 
     def get_size(self):
         return self.size
@@ -33,9 +36,6 @@ class Parser:
             count += 1
 
         return lines
-
-    def close(self):
-        self.reader.close()
 
 
 class CnpjCsvParser(Parser):
@@ -111,7 +111,7 @@ class EstabeleCsvParser(Parser):
             'motivo_situacao_cadastral': row[7],
             'data_abertura': parse_date(row[10]),
             'cnae_principal': parse_cnae(row[11]),
-            'cnae_secundaria': parse_cnae(row[12]),
+            'cnae_secundaria': parse_cnaeSecundario(row[12]),
             'endereco_tipo_logradouro': row[13],
             'endereco_logradouro': row[14],
             'endereco_numero': row[15],

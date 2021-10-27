@@ -1,3 +1,5 @@
+import json
+
 def parse_date(unformatted_data):
     if len(unformatted_data) == 8:
         return '-'.join((
@@ -29,7 +31,11 @@ def parse_float(text):
 def parse_cnae(cnae_text_list):
     if len(cnae_text_list) > 0:
         cnaes = cnae_text_list.split(',')
-
         return cnaes[0]
+    return None
 
+def parse_cnaeSecundario(cnae_text_list):
+    if len(cnae_text_list) > 0:
+        cnaes = cnae_text_list.split(',')
+        return json.dumps(cnaes)
     return None
