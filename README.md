@@ -1,13 +1,25 @@
 # Description
-This tool imports the brazilian companies open data to a MySQL server.
+Ferramenta para ler os dados de CNPJs liberados pela Receita Federal e armazenar esses dados em um banco Mysql/Mariadb
 
-Note: Python 3.6 or higher is required
+Requisito: Python 3.6+
+
+Você precisará instalar o pip caso não tenha
+```
+sudo apt-get install pip
+```
+
+Você precisará instalar o mysql.connector e o tqdm caso não tenha
+```
+sudo pip install mysql.connector
+sudo pip install tqdm
+```
+
 
 # Usage
 
 ## Download
 
-This may take a while, since it downloads and extracts all files.
+Este processo vai demorar horrores, temos que baixar todos os arquivos da receita federal e descompacta-los. O servidor dos caras é muito lento.
 ```
 sh download.sh
 ```
