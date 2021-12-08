@@ -1,6 +1,8 @@
+#!/bin/bash
+BASEDIR=$(dirname $0)
 DOWNLOAD_URL=http://200.152.38.155/CNPJ/
-DOWNLOAD_DIR=data/download
-EXTRACT_DIR=data/output-extract
+DOWNLOAD_DIR=${BASEDIR}/data/download
+EXTRACT_DIR=${BASEDIR}/data/output-extract
 
 if [ ! -d $DOWNLOAD_DIR ]; then
     echo "Creating dirs"
