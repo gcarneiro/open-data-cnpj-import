@@ -54,7 +54,7 @@ def check_folders():
 
         if i == 12 and novo_arquivo.concluido == False: # O arquivo ainda não foi totalmente baixado mais já foi adicionado no banco
             criar_thread_de_download(novo_arquivo.__dict__)
-            break
+            break 
         """ else:
             print(f'{novo_arquivo.nome}: Finalizado') """
         

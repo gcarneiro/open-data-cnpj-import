@@ -18,4 +18,4 @@ Empresa = Base.classes.empresa
 Arquivos_Processados = Base.classes.arquivos_processados
 
 
-#print(session.query(Arquivos_Processados).all())
+#print(session.query(Arquivos_Processados).all()) 
