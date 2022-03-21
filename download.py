@@ -1,7 +1,7 @@
 import os, requests, datetime, threading
 from bs4 import BeautifulSoup
-from db_main import *
 from tqdm import tqdm
+from db_main import *
 
 
 BASEDIR = os.getcwd()
@@ -11,7 +11,7 @@ EXTRACT_DIR = f'{BASEDIR}/data/output-extract'
 LOG_FILE = f'{BASEDIR}/log.json'
 
 #
-def get_url_paths(url: str, ext: str = ''):
+def pegar_urls_no_site(url: str, ext: str = ''):
     """ Função responsavel por recuperar as urls dentro do parent folder """
     response = requests.get(url)
 
@@ -30,15 +30,14 @@ def get_url_paths(url: str, ext: str = ''):
 
     return parent
 
-def check_folders():
+def verificar_pasta_download():
     """ Função responsavel por verificar se as pastas necessarias existem, se não criar elas """
     if not os.path.exists(DOWNLOAD_DIR):
         os.mkdir(DOWNLOAD_DIR)
 
-    resultados = get_url_paths(DOWNLOAD_URL, 'zip')
+    resultados = pegar_urls_no_site(DOWNLOAD_URL, 'zip')
     session = Session(engine)
 
-    i = 0
     for arquivo in resultados:
         novo_arquivo = session.query(Arquivos_Processados).filter_by(nome=arquivo['nome'], data_de_criacao=arquivo['data_de_criacao']).first()
 
@@ -52,13 +51,10 @@ def check_folders():
             session.add(novo_arquivo)
             session.commit()
 
-        if i == 12 and novo_arquivo.concluido == False: # O arquivo ainda não foi totalmente baixado mais já foi adicionado no banco
-            criar_thread_de_download(novo_arquivo.__dict__)
-            break 
+        if novo_arquivo.concluido == False: # O arquivo ainda não foi totalmente baixado mais já foi adicionado no banco
+            criar_thread_de_download(novo_arquivo.__dict__) 
         """ else:
             print(f'{novo_arquivo.nome}: Finalizado') """
-        
-        i += 1
 
         session.close()
 
@@ -80,14 +76,15 @@ def baixar_arquivo(novo_arquivo):
             with open(arquivo_path, 'rb') as arquivo:
                 data = arquivo.read()
                 
+        print(tamanho_atual)
         header = {"Range": f"bytes={tamanho_atual}-"}
         res = requests.get(novo_arquivo['url'], stream=True, headers=header)
         
         tamanho_total = int(res.headers.get('content-length', 0))
         progress_bar = tqdm(total=tamanho_total, unit='iB', unit_scale=True)
 
-        with open(arquivo_path, 'wb') as arquivo:
-            for chunk in res.iter_content(chunk_size=1024): # Concatenar a cada 20kb
+        with open(arquivo_path, 'ab') as arquivo:
+            for chunk in res.iter_content(chunk_size=1024):
                 if(chunk):
                     progress_bar.update(len(chunk))
                     arquivo.write(chunk)
@@ -112,4 +109,4 @@ def importar_mysql():
 
 
 
-check_folders()
+verificar_pasta_download()
