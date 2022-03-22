@@ -12,7 +12,7 @@ def parse_args():
         print('usage: mysql_import.py <host> <port> <user> <password> <database> <directory>')
 
         exit()
-
+    
     args = {
         'host': sys.argv[1],
         'port': sys.argv[2],
@@ -25,16 +25,16 @@ def parse_args():
         args['directory'] = sys.argv[6]
     else:
         args['directory'] = DEFAULT_DIRECTORY
-
+        
     return args
 
 
 args = parse_args()
 log = Log()
 sql = MysqlImport(args['host'], args['port'], args['user'], args['password'], args['database'], log)
-log.info('Creating schema')
-sql.run_script('schema/mysql/drop-tables.sql')
-sql.run_script('schema/mysql/create-tables.sql')
+#log.info('Creating schema')
+#sql.run_script('schema/mysql/drop-tables.sql')
+#sql.run_script('schema/mysql/create-tables.sql')
 
 log.info('Analyzing files')
 parsers = generate_parsers_from_files(args['directory'], log)

@@ -7,8 +7,11 @@ class SqlImport():
     def build_insert(self, parser, keys):
         sqlKeys = ','.join(keys)
         sqlValues = ','.join(['%s'] * len(keys))
+        sqlUpdates = ','.join(f'{item}=VALUES({item})' for item in keys)
 
-        return 'INSERT INTO ' + parser.TABLE + '(' + sqlKeys + ') VALUES (' + sqlValues + ')'
+        #return 'INSERT INTO ' + parser.TABLE + '(' + sqlKeys + ') VALUES (' + sqlValues + ')'
+        return f'INSERT INTO {parser.TABLE} ({sqlKeys}) VALUES ({sqlValues}) ON DUPLICATE KEY UPDATE {sqlUpdates};'
+
 
 
 class MysqlImport(SqlImport):

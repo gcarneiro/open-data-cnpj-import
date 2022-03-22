@@ -1,8 +1,8 @@
 import csv
-import sys
 
 DELIMITER = ';'
-ENCODING = 'ISO-8859-1'
+#ENCODING = 'ISO-8859-1'
+ENCODING = 'utf-8'
 
 class CsvReader:
     def __init__(self, filename, log=None):
@@ -10,12 +10,16 @@ class CsvReader:
         self.log = log
 
     def read(self):
-        file = open(self.filename, 'r', encoding=ENCODING)
+        file = open(self.filename, 'r', encoding=ENCODING, errors='ignore')
         with file as csvfile:
             for line in csvfile:
                 reader = csv.reader([line.replace('\0','')], delimiter=DELIMITER)
                 for row in reader:
-                    yield row
+                    try:
+                        yield row
+                    except:
+                        print(line)
+                
 
     def count_lines(self, chunk_size=65536):
         count = 0
