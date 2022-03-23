@@ -17,8 +17,7 @@ EXTRACT_DIR = f'{BASEDIR}/data/output-extract'
 def parse_args():
     if len(sys.argv) < 5:
         print('usage: mysql_import.py <host> <port> <user> <password> <database> <directory>')
-
-        exit()
+        return False
     
     args = {
         'user': sys.argv[3],
@@ -162,18 +161,22 @@ def verificar_arquivo_final(arquivo_path):
 
 def criar_arquivo_lock():
     ''' adquire o acesso exclusivo da execução do script, caso outro processo já tenha adquirido sobre uma execeção '''
-    arquivo_path = f'{BASEDIR}/.lockfile'
-    if not os.path.exists(arquivo_path):
-        log.info(f'Criando arquivo lock')
-        open('.lockfile', 'w+').close()
-        return True
-    elif get_data_modificacao(arquivo_path) < (datetime.datetime.now() - datetime.timedelta(days = 2)):
-        log.info(f'Arquivo lock existe a 2 dias, excluindo ele')
-        remover_arquivo_lock()
-        return True
-    else:
-        log.info(f'Impossivel iniciar o script, outro script parece estar sendo executado nesse momento')
-        return False
+    try:
+        arquivo_path = f'{BASEDIR}/.lockfile'
+        if not os.path.exists(arquivo_path):
+            log.info(f'Criando arquivo lock')
+            open('.lockfile', 'w+').close()
+            return True
+        elif get_data_modificacao(arquivo_path) < (datetime.datetime.now() - datetime.timedelta(days = 2)):
+            log.info(f'Arquivo lock existe a 2 dias, excluindo ele')
+            remover_arquivo_lock()
+            return True
+        else:
+            log.info(f'Impossivel iniciar o script, outro script parece estar sendo executado nesse momento')
+            return False
+    except Exception as e:
+        log.error(str(e))
+        raise e
 
 def remover_arquivo_lock():
     ''' libera o acesso da execução para outros processos '''
@@ -215,7 +218,7 @@ try:
     db_args = parse_args()
     destravado = criar_arquivo_lock()
 
-    if destravado:
+    if db_args and destravado:
         engine, Arquivos_Processados = iniciar_db(**db_args)
         verificar_pasta_iniciar_download()
         

@@ -1,8 +1,8 @@
 import csv
 
 DELIMITER = ';'
-#ENCODING = 'ISO-8859-1'
-ENCODING = 'utf-8'
+ENCODING = 'ISO-8859-1'
+#ENCODING = 'utf-8'
 
 class CsvReader:
     def __init__(self, filename, log=None):
@@ -10,7 +10,7 @@ class CsvReader:
         self.log = log
 
     def read(self):
-        file = open(self.filename, 'r', encoding=ENCODING, errors='ignore')
+        file = open(self.filename, 'r', encoding='utf-8', errors='ignore')
         with file as csvfile:
             for line in csvfile:
                 reader = csv.reader([line.replace('\0','')], delimiter=DELIMITER)
