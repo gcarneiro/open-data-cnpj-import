@@ -8,7 +8,6 @@ from db_main import iniciar_db
 log = Log()
 
 THREADS = []
-EXECUTANDO = False
 BASEDIR = os.getcwd()
 DOWNLOAD_URL = 'http://200.152.38.155/CNPJ/'
 DOWNLOAD_DIR = f'{BASEDIR}/data/download'
@@ -16,7 +15,7 @@ EXTRACT_DIR = f'{BASEDIR}/data/output-extract'
 
 def parse_args():
     if len(sys.argv) < 5:
-        print('usage: mysql_import.py <host> <port> <user> <password> <database> <directory>')
+        print('usage: download.py <host> <port> <user> <password> <database>')
         return False
     
     args = {
@@ -31,6 +30,7 @@ def parse_args():
 
 def pegar_urls_no_site(url: str, ext: str = ''):
     """ Função responsavel por recuperar as urls de download no servidor """
+    log.info(f'Buscando arquivos disponiveis para download na url: {url}')
     response = requests.get(url)
 
     if response.ok:
@@ -55,6 +55,10 @@ def verificar_pasta_iniciar_download():
     if not os.path.exists(DOWNLOAD_DIR):
         log.info(f'Criando DOWNLOAD_DIR.')
         os.mkdir(DOWNLOAD_DIR)
+
+    if not os.path.exists(EXTRACT_DIR):
+        log.info(f'Criando EXTRACT_DIR.')
+        os.mkdir(EXTRACT_DIR)
 
     resultados = pegar_urls_no_site(DOWNLOAD_URL, 'zip')
     session = Session(engine)
@@ -109,7 +113,7 @@ def baixar_arquivo(novo_arquivo):
 
         if tamanho_atual < tamanho_total:
             header = {"Range": f"bytes={tamanho_atual}-"}
-            res = requests.get(novo_arquivo['url'], stream=True, headers=header, timeout=60)
+            res = requests.get(novo_arquivo['url'], stream=True, headers=header, timeout=None)
             progress_bar = tqdm(desc=novo_arquivo['nome'], total=tamanho_total-tamanho_atual, unit='iB', unit_scale=True)
 
             with open(arquivo_path, 'ab') as arquivo:
@@ -123,13 +127,21 @@ def baixar_arquivo(novo_arquivo):
             log.error(f'{novo_arquivo["nome"]}: Error inesperado.')
 
         if verificar_arquivo_final(arquivo_path): # Caso o zip baixado seja valido
+            log.info(f"Extraindo arquivo: {novo_arquivo['nome']}")
+
+            if os.path.exists(arquivo_path):
+                with zipfile.ZipFile(arquivo_path, 'r') as zip_ref:
+                    zip_ref.extractall(EXTRACT_DIR)
+                
+                    log.info(f"Arquivo extraido: {novo_arquivo['nome']}")
+
             session.query(Arquivos_Processados).filter_by(nome=novo_arquivo['nome']).update({
                 "concluido": True, 
                 "tamanho_total": tamanho_total
             })
 
             session.commit()
-            log.info(f'{novo_arquivo["nome"]}: Arquivo valido e concluido.')
+            log.info(f'{novo_arquivo["nome"]}: Arquivo valido, baixado e extraido.')
         else: # se o zip não for valido
             if tamanho_atual >= tamanho_total: # Porem o tamanho do arquivo e maior ou igual o esperado, Remove o arquivo pois algo inesperado aconteceu
                 log.error(f'{novo_arquivo["nome"]}: Arquivo invalido')
@@ -186,37 +198,8 @@ def get_data_modificacao(arquivo_path):
     t = os.path.getmtime(arquivo_path)
     return datetime.datetime.fromtimestamp(t)
 
-def exportar_arquivos():
-    """ Captura todos os arquivos concluidos no banco e exporta eles para a pasta designada """
-    try:
-        if not os.path.exists(EXTRACT_DIR):
-            os.mkdir(EXTRACT_DIR)
-
-        session = Session(engine)
-        arquivos = session.query(Arquivos_Processados).filter_by(concluido=True).all()
-
-        for arquivo in arquivos:
-            log.info(f"Exportando arquivo: {arquivo.nome}")
-            arquivo_path = f'{DOWNLOAD_DIR}/{arquivo.nome}'
-
-            if os.path.exists(arquivo_path):
-                with zipfile.ZipFile(arquivo_path, 'r') as zip_ref:
-                    zip_ref.extractall(EXTRACT_DIR)
-        
-        pasta_nome = f'{DOWNLOAD_DIR}_concluido_{datetime.datetime.date().strftime("%y-%m-%d")}'
-        log.info(f'Exporatação finalizada, renomeando pasta download para: {pasta_nome}')
-        os.rename(DOWNLOAD_DIR, pasta_nome) # Muda o nome da pasta
-
-    except Exception as e:
-        log.error(str(e))
-        raise e
-    
-    finally:
-        session.close()
-
 try:
     db_args = parse_args()
-    
 
     if db_args:
         destravado = criar_arquivo_lock()
@@ -232,12 +215,11 @@ try:
             for download in THREADS:
                 download.join()
 
-            exportar_arquivos() # Exporta os arquivos concluidos na pasta ao finalizar exclui a pasta downloads
             remover_arquivo_lock() # Ao finalizar a execução do script remover o arquivo lock
 
 except Exception as e:
     print(e)
 
 finally:
-    if destravado:
+    if db_args and destravado:
         remover_arquivo_lock() # Ao finalizar a execução do script remover o arquivo lock

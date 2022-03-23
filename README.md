@@ -8,10 +8,9 @@ Você precisará instalar o pip caso não tenha
 sudo apt-get install pip
 ```
 
-Você precisará instalar o mysql.connector e o tqdm caso não tenha
+Você precisará instalar as dependência do python
 ```
-sudo pip install mysql.connector
-sudo pip install tqdm
+sudo pip install -r requirements.txt
 ```
 
 
@@ -21,19 +20,21 @@ sudo pip install tqdm
 
 Este processo vai demorar horrores, temos que baixar todos os arquivos da receita federal e descompacta-los. O servidor dos caras é muito lento.
 ```
-sh download.sh
+python download.py <host> <port> <user> <password> <database>
 ```
 
 ## Import
-You can import the data in your existing MySQL server, but you can also start a new one using docker:
+Você pode importar os dados para um servidor MySQL já existente, ou você pode iniciar um novo utilizando o docker:
 ```
 docker run --name mysql-cnpj -p 3306:3306 -h localhost -e MYSQL_ROOT_PASSWORD=my-secret-pw -e MYSQL_DATABASE=cnpj -d mysql
 ```
-After starting your MySQL server, run the following, replacing with your credentials:
+Importe o schema para o seu banco rodando o script create-tables.sql dentro de schema/mysql
+
+Depois de iniciar o servidor MySQL, rode o seguinte comando, alterando para os dados do seu servidor:
 ```
 python mysql_import.py <host> <port> <user> <password> <database>
 ```
-Example:
+Exemplo:
 ```
 python mysql_import.py localhost 3306 root my-secret-pw cnpj
 ```
@@ -43,6 +44,7 @@ The following table describes the defined schema:
 
 Table name | Description
 ---------- | -------------
+arquivos_processado | Tabela de controle utilizada pelo script de download
 empresa | Basic company data.
 estabelecimento | Detailed company data, each row represents a subsidiary company or the parent company itself.
 socio | Basic info about the company partners.
