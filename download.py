@@ -216,22 +216,24 @@ def exportar_arquivos():
 
 try:
     db_args = parse_args()
-    destravado = criar_arquivo_lock()
+    
 
-    if db_args and destravado:
-        engine, Arquivos_Processados = iniciar_db(**db_args)
-        verificar_pasta_iniciar_download()
-        
-        # Inicia todas as Threads
-        for download in THREADS:
-            download.start()
+    if db_args:
+        destravado = criar_arquivo_lock()
+        if destravado:
+            engine, Arquivos_Processados = iniciar_db(**db_args)
+            verificar_pasta_iniciar_download()
+            
+            # Inicia todas as Threads
+            for download in THREADS:
+                download.start()
 
-        # Espera todas as Threads acabarem antes de finalizar o script
-        for download in THREADS:
-            download.join()
+            # Espera todas as Threads acabarem antes de finalizar o script
+            for download in THREADS:
+                download.join()
 
-        exportar_arquivos() # Exporta os arquivos concluidos na pasta ao finalizar exclui a pasta downloads
-        remover_arquivo_lock() # Ao finalizar a execução do script remover o arquivo lock
+            exportar_arquivos() # Exporta os arquivos concluidos na pasta ao finalizar exclui a pasta downloads
+            remover_arquivo_lock() # Ao finalizar a execução do script remover o arquivo lock
 
 except Exception as e:
     print(e)
