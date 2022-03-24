@@ -44,9 +44,9 @@ if len(parsers) > 0:
 else:
     log.info('No files found.')
 
-log.info('Truncating tables')
+""" log.info('Truncating tables')
 for parser in parsers:
-    sql.truncate_table(parser.TABLE)
+    sql.truncate_table(parser.TABLE) """
 
 count = 0
 for parser in parsers:
