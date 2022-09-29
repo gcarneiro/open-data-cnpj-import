@@ -5,7 +5,7 @@ from parser.csv_reader import CsvReader
 from parser.importer import SqlImport, MysqlImport
 from tools.log import Log
 
-DEFAULT_DIRECTORY = 'data/output-extract'
+DEFAULT_DIRECTORY = 'data/teste-extract'
 
 def parse_args():
     if len(sys.argv) < 5:
@@ -44,9 +44,11 @@ if len(parsers) > 0:
 else:
     log.info('No files found.')
 
-""" log.info('Truncating tables')
+log.info('Truncating tables')
+""" Vamos excluir os dados das tabelas (tirando empresa e estabelecimento) antes de importar os novos dados """
 for parser in parsers:
-    sql.truncate_table(parser.TABLE) """
+    if not parser.TABLE in ['empresa', 'estabelecimento']:
+        sql.truncate_table(parser.TABLE)
 
 count = 0
 for parser in parsers:
