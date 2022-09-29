@@ -8,5 +8,4 @@ CREATE TABLE IF NOT EXISTS natureza_juridica (codigo char(4), descricao varchar(
 CREATE TABLE IF NOT EXISTS qualificacao_socio (codigo char(2), descricao varchar(150), PRIMARY KEY (codigo));
 CREATE TABLE IF NOT EXISTS pais (codigo char(3), descricao varchar(60), PRIMARY KEY (codigo));
 CREATE TABLE IF NOT EXISTS motivo_situacao_cadastral (codigo char(2), descricao varchar(100), PRIMARY KEY (codigo));
-CREATE INDEX IF NOT EXISTS ESTABELECIMENTO_CNPJ ON estabelecimento(cnpj);
-CREATE TABLE IF NOT EXISTS arquivos_processados (nome varchar(120), url varchar(120), data_de_criacao varchar(30), data_de_processamento varchar(30), tamanho_total int, concluido bool, PRIMARY KEY (nome));
+CREATE TABLE IF NOT EXISTS arquivos_processados (nome varchar(120), url varchar(120), data_de_criacao varchar(30), data_de_processamento varchar(30), tamanho_total int, concluido bool, PRIMARY KEY (nome,data_de_criacao));

@@ -14,6 +14,6 @@ def iniciar_db(user, password, host, port, database):
 
     # reflect the tables
     Base.prepare(engine, reflect=True)
-    Arquivos_Processados = Base.classes.arquivos_processados
+    arquivos_processados = Base.classes.arquivos_processados
 
-    return (engine, Arquivos_Processados)
+    return (engine, arquivos_processados)
