@@ -10,3 +10,4 @@ CREATE TABLE IF NOT EXISTS pais (codigo char(3), descricao varchar(60), PRIMARY 
 CREATE TABLE IF NOT EXISTS motivo_situacao_cadastral (codigo char(2), descricao varchar(100), PRIMARY KEY (codigo));
 CREATE INDEX IF NOT EXISTS ESTABELECIMENTO_CNPJ ON estabelecimento(cnpj);
 CREATE TABLE IF NOT EXISTS arquivos_processados (nome varchar(120), url varchar(120), data_de_criacao varchar(30), data_de_processamento varchar(30), tamanho_total int, concluido bool, PRIMARY KEY (nome));
+CREATE INDEX IF NOT EXISTS EMPRESA_CNAE_PRINCIPAL ON estabelecimento(cnae_principal);
