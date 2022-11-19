@@ -64,14 +64,14 @@ def verificar_pasta_iniciar_download():
     session = Session(engine)
 
     for arquivo in resultados:
-        novo_arquivo = session.query(Arquivos_Processados).filter_by(nome=arquivo['nome'], data_de_criacao=arquivo['data_de_criacao']).first()
+        novo_arquivo = session.query(arquivos_processados).filter_by(nome=arquivo['nome'], data_de_criacao=arquivo['data_de_criacao']).first()
 
         if not novo_arquivo:
             # Esse arquivo ainda não foi adicionado no banco
             arquivo['tamanho_total'] = 0
             arquivo['concluido'] = False
 
-            novo_arquivo = Arquivos_Processados(**arquivo)
+            novo_arquivo = arquivos_processados(**arquivo)
 
             session.add(novo_arquivo)
             session.commit()
@@ -84,7 +84,7 @@ def verificar_pasta_iniciar_download():
                 log.info(f'{novo_arquivo.nome}: Arquivo já foi concluido')
             else:
                 novo_arquivo = novo_arquivo.__dict__
-                session.query(Arquivos_Processados).filter_by(nome=novo_arquivo['nome']).update({"concluido": False, 'tamanho_total': 0})
+                session.query(arquivos_processados).filter_by(nome=novo_arquivo['nome']).update({"concluido": False, 'tamanho_total': 0})
                 session.commit()
                 
                 criar_thread_de_download(novo_arquivo)
@@ -135,7 +135,7 @@ def baixar_arquivo(novo_arquivo):
                 
                     log.info(f"Arquivo extraido: {novo_arquivo['nome']}")
 
-            session.query(Arquivos_Processados).filter_by(nome=novo_arquivo['nome']).update({
+            session.query(arquivos_processados).filter_by(nome=novo_arquivo['nome']).update({
                 "concluido": True, 
                 "tamanho_total": tamanho_total
             })
@@ -204,7 +204,8 @@ try:
     if db_args:
         destravado = criar_arquivo_lock()
         if destravado:
-            engine, Arquivos_Processados = iniciar_db(**db_args)
+            engine, arquivos_processados = iniciar_db(**db_args)
+
             verificar_pasta_iniciar_download()
             
             # Inicia todas as Threads
@@ -218,8 +219,8 @@ try:
             remover_arquivo_lock() # Ao finalizar a execução do script remover o arquivo lock
 
 except Exception as e:
-    print(e)
-
+    log.error(f'Error inesperado: {traceback.format_exc()}')
+    
 finally:
     if db_args and destravado:
         remover_arquivo_lock() # Ao finalizar a execução do script remover o arquivo lock
